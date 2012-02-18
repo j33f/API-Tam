@@ -1,7 +1,7 @@
 <?php
 /*
-	Author : jean-François VIAL <http://about.me/Jeff_>
-	This program is free software: you can redistribute it and/or modify
+    Author : jean-François VIAL <http://about.me/Jeff_>
+    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version
@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-/* Utilities 																  */
+/* Utilities                                                                  */
 /******************************************************************************/
 
 function curlIt($url,$data=array(),$method='get',$progress=false) {
@@ -36,28 +36,35 @@ function curlIt($url,$data=array(),$method='get',$progress=false) {
     return $ret;
 }
 
-/* Main functions															  */
+/* Main functions & global vars                                               */
 /******************************************************************************/
 
+$operators = array(
+				'montpellier' => 'tam',
+				'grenoble'	  => 'tag',
+				'orleans'	  => 'tao',
+				'reims'		  => 'citura',
+			);
+$operator = 'tam';
 $session_id = ''; // the curent session ID from the Transdev server
 
 function getSessionId() {
 	// Get the session Id from the server
-    global $session_id;
-    $page = curlIt('http://tam.mobitrans.fr/index.php');
+    global $session_id,$operator;
+    $page = curlIt('http://'.$operator.'.mobitrans.fr/index.php');
     preg_match('#&I=([^&]*)&#',$page,$matches);
     $session_id = $matches[1];
 }
 function getLines() {
 	// retrieve all available bus/tram lines
-    global $lines,$session_id;
+    global $lines,$session_id,$operator;
     $lines = array();
     $bad_lines = array(3,4); // lines that are not available
 
     for ($line = 1; $line<17; $line++) {
         if (!in_array($line,$bad_lines)) {
             $page = curlIt(
-                'http://tam.mobitrans.fr/index.php',
+                'http://'.$operator.'.mobitrans.fr/index.php',
                 array(
                     'ligne' => $line,
                     'p' => 41,
@@ -88,7 +95,7 @@ function getLines() {
         }
     }
     // cache the lines informations
-    file_put_contents('mobitransLines.php','<?php $lines = '.var_export($lines,true).'; ?>');
+    file_put_contents($operator.'.php','<?php $lines = '.var_export($lines,true).'; ?>');
 }
 
 function getStopsList() {
@@ -107,7 +114,7 @@ function getStopsList() {
 function getTimes($line=16,$stopName='Alco') {
 	// get the nex transit time
 	// its diff time from the curent time
-    global $lines,$session_id;
+    global $lines,$session_id,$operator;
     $params = $lines[$line][$stopName];
     $params['I'] = $session_id;
     $params['m'] = 1; // *must* be 1 !!!!
@@ -118,7 +125,7 @@ function getTimes($line=16,$stopName='Alco') {
         $url .= $k.'='.$v;
     }
 
-    $page = curlIt('http://tam.mobitrans.fr/index.php?'.$url);
+    $page = curlIt('http://'.$operator.'.mobitrans.fr/index.php?'.$url);
     if (!preg_match_all('#<b>Vers ([^<]*)</b>#',$page,$directions)) {
     	// if that mask is not found, there may be a problem…
     	// TODO : improuve that
@@ -170,11 +177,11 @@ function getTransit($line=2,$stopName='Aiguelongue',$direction='') {
     }
 }
 
-/* Main 																	  */
+/* Main                                                                       */
 /******************************************************************************/
 
 getSessionId();
-@include 'mobitransLines.php';
+@include $operator.'.php';
 // it the cache is empty, retrieve all lines
 if (!isset($lines)) getLines();
 
