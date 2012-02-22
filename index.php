@@ -182,7 +182,10 @@ function getLinesFromMobitrans() {
                 $p = explode('&',$matches[1][$k]);
                 foreach ($p as $row) {
                     $pp = explode('=',$row);
-                    $params[$pp[0]] = trim($pp[1]);
+                    // clean up the value
+                    $val = explode("\r\n",$pp[1]);
+                    $val = $val[count($val)-1];
+                    $params[$pp[0]] = trim($val);
                 }
                 $lines[$line][$stop] = $params;
             }
