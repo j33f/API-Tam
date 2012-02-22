@@ -301,6 +301,8 @@ switch($_REQUEST['request']) {
 		exit(json_encode($response));
 		break;
 	case 'getTransit':
+		$_REQUEST['stop'] = stripslashes($_REQUEST['stop']);
+		$_REQUEST['direction'] = stripslashes($_REQUEST['direction']);
 		if (isset($lines[$_REQUEST['line']][$_REQUEST['stop']])) {
 			$ret = getTransit($_REQUEST['line'],$_REQUEST['stop'],$_REQUEST['direction'],$_REQUEST['theoric']);
 			if ($ret === false)
