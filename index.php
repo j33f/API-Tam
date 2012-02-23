@@ -13,114 +13,15 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+    Sources are tam.mobitrans.fr and tam.agilisprod.com
 */
 
 /* Utilities                                                                  */
 /******************************************************************************/
 
-function httpRequest($params = array()) {
-	// perform an HTTP Request
-
-	$parameters = array( // default parameters
-			'host' 		=> '', 													//the host to reach
-			'port'		=> 80,
-			'path' 		=> '/', 												// the path to ask for
-			'datas' 	=> array(), 											// the datas to send
-			'type' 		=> 'get', 												// the request type (get, post (urlencoded form), post_multipart (multipart form data post)
-			'referer' 	=> null, 												// the referer to define
-			'viaXHR' 	=> false, 												// simulare an XMLHTTPRequest ?
-			'userAgent' => 'Mozilla/5.0 (X11; Linux x86_64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1',
-			'headers' 	=> array(),												// some custom additional headers to send
-			'cookies'	=> array(),
-	);
-	$parameters = array_merge($parameters,$params);
-	$fp = fsockopen($parameters['host'], $parameters['port'], $errno, $errstr, 30);
-	if (!$fp) {
-		return array(
-			'success' => false,
-			'message' => "$errstr ($errno)"
-		);
-	} else {
-		$type = strtoupper($parameters['type']);
-		switch($type) {
-			case 'POST_MULTIPART':
-				$method = 'POST';
-				break;
-			default:
-				$method = $type;
-		}
-
-		$encodedDatas = '';
-		foreach ($parameters['datas'] as $k=>$v) {
-			$encodedDatas .= ($encodedDatas ? '&' : '');
-	        $encodedDatas .= rawurlencode(trim($k)).'='.rawurlencode($v);
-	    }
-
-		$out = "{$method} {$parameters['path']}";
-		if ($method == 'GET' && $encodedDatas != '')
-			$out .= '?'.$encodedDatas;
-		$out .= " HTTP/1.1\r\n";
-		$out .= "Host: {$parameters['host']}\r\n";
-		$out .= "User-Agent: {$parameters['userAgent']}\r\n";
-		if ($parameters['viaXHR']) {
-			$out .= "X-Requested-With: XMLHttpRequest\r\n";
-			$out .= "Accept: text/javascript, text/html, application/xml, text/xml, */*\r\n";
-		} else {
-			$out .= "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n";
-		}
-		if ($type == 'POST')
-			$out .= "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n";
-		if ($type == 'POST_MULTIPART')
-			$out .= "Content-Type: multipart/form-data; charset=UTF-8\r\n";
-		if (!is_null($parameters['referer']))
-			$out .= "Referer: {$parameters['referer']}\r\n";
-		foreach($parameters['headers'] as $k=>$v) {
-			$out .= "{$k}: {$v}\r\n";
-		}
-		$cookies = 0;
-		if (count($parameters['cookies']) > 0) {
-			$out .= 'Cookie: ';
-			foreach($parameters['cookies'] as $k=>$v) {
-				if ($cookies > 0) $out .= '; ';
-				$out .= "{$k}={$v}";
-				$cookies++;
-			}
-			$out .= "\r\n";
-		}
-		$out .= "Connection: keep-alive\r\n";
-		if ($method == 'POST') {
-			$out .= "Content-Length: ".strlen($encodedDatas)."\r\n\r\n";
-			$out .= $encodedDatas;
-		}
-		if ($method == 'GET') {
-			$out .= "Content-Length: 0\r\n\r\n";
-		}
-
-		fwrite($fp, $out);
-
-		// getting response
-		$in_headers = true;	// true if we are still in headers
-		$headers = $body = '';
-		while (!feof($fp)) {
-			$line = fgets($fp);
-			if ($in_headers && ($line == "\n" || $line == "\r\n")) {
-				// empty line : end of headers
-				$in_headers = false;
-			}
-			if ($in_headers)
-				$headers .= $line;
-			else
-				$body .= $line;
-		}
-		fclose($fp);
-		$ret = array(
-			'success' => true,
-			'headers' => $headers,
-			'body'    => $body
-		);
-		return $ret;
-	}
-}
+require_once 'libs/utilities.php';
+require_once 'libs/phoneticize.php';
 
 /* Main functions & global vars                                               */
 /******************************************************************************/
@@ -133,7 +34,6 @@ $operators = array(
 				'reims'		  => 'citura',
 			);
 $operator = 'tam'; // default operator
-
 $MOBITrans_session_id = ''; // the curent session ID from the Transdev server
 $MOBITrans_cookie = ''; // the curent cookie from the Transdev server
 
@@ -151,13 +51,155 @@ function startMobitransSession() {
 	preg_match('/MOBITRANS_ID=([^;]*);/',$page['headers'],$matches);
 	$MOBITrans_cookie = $matches[1];
 }
-function getLinesFromMobitrans() {
+
+function getStopFromAgilis($stop) {
+	// get the «real» stop name from MOBITrans® one via Agilis service.
+
+	// lets make some pre treatment on $stop
+	$stop = preg_replace('/ st /i', ' saint-',
+			str_ireplace('rte ', 'route ',
+			str_ireplace('bd ', 'boulevard ',
+			str_ireplace('av. ', 'avenue ',
+			str_ireplace('pl. ', 'place ',
+			str_ireplace('cim. ', 'cimetière ',
+			// those stops does not exists or need to be corrected to be found
+			str_ireplace('ravas', 'ravaz',
+//			str_ireplace('arceaux', 'Sainte Thérèse', TODO verify !!!
+			str_ireplace('Gare Routiere', 'Gare Saint Roch',
+			str_ireplace('Les Lacs', 'La Pompignane (Les Lacs)',
+			str_ireplace('Francoise', 'Françoise',
+			str_ireplace('Ecossais', 'Écossais',
+			str_ireplace('Saint Jean', 'Saint-Jean',
+			preg_replace('/europ$/i', 'Europe',
+			str_ireplace(' gallois', ' galois',
+			str_ireplace('etienne', 'Étienne',
+			str_ireplace('etoile', 'Étoile',
+			str_ireplace('erables', 'Érables',
+			str_ireplace('agriculture', 'l\'Agriculture',
+
+			preg_replace('/[^ ]d\'/i',' d\'',
+			preg_replace('/ [tl][1-9]/i','',
+			preg_replace('/ Juss$/i',' (Jussieu)',
+			' '.$stop)))))))))))))))))))));
+
+	$page = httpRequest(array(
+		'host' => 'tam.agilisprod.com',
+		'path' => '/stop_area_searches',
+		'datas' => array('stop_area_search[user_input]' => $stop),
+		'type' => 'post',
+		'referer' => 'http://tam.agilisprod.com/stop_area_searches',
+		'viaXHR' => true
+	));
+
+	$ret = false;
+	$dom = new DomDocument();
+	$dom->loadXML(trim($page['body']).'>');
+	$lis = $dom->getElementsByTagName('li');
+	if ($lis->length > 1) {
+		// more than one response, lets take the equal or most phonetically near one
+		foreach ($lis as $li) {
+			if (preg_match('/(.*) ?\([0-9]{5} (.*)\)/',trim($li->nodeValue),$matches)) {
+				$name = $matches[1];
+				$town = $matches[2];
+			} else {
+				$name = trim($li->nodeValue);
+				$town = '';
+			}
+			if (trim($name) == trim($stop) || phoneticize($name) == phoneticize($stop)) {
+				$ret = array(
+					'id' => str_replace('stop_','',$li->getAttribute('id')),
+					'name' => $name,
+					'town' => $town,
+				);
+				break;
+			}
+		}
+	} elseif ($lis->length == 1) {
+		// only one response, should be the good one
+		$li = $lis->item(0);
+		if (preg_match('/(.*) ?\([0-9]{5} (.*)\)/',trim($li->nodeValue),$matches)) {
+			$name = $matches[1];
+			$town = $matches[2];
+		} else {
+			$name = trim($li->nodeValue);
+			$town = '';
+		}
+		$ret = array(
+			'id' => str_replace('stop_','',$li->getAttribute('id')),
+			'name' => $name,
+			'town' => $town,
+		);
+	}
+	if (!$ret && $lis->length > 1) {
+		// names differs too much (no response) : lets compare the last word which is the same generally
+		$_stop = explode(' ',$stop);
+		$_stop = $_stop[count($_stop)-1];
+		foreach ($lis as $li) {
+			if (preg_match('/(.*) ?\([0-9]{5} (.*)\)/',trim($li->nodeValue),$matches)) {
+				$name = $matches[1];
+				$town = $matches[2];
+			} else {
+				$name = trim($li->nodeValue);
+				$town = '';
+			}
+			$_name = explode(' ',$name);
+			$_name = $_name[count($_name)-1];
+			if (phoneticize($_name) == phoneticize($_stop)) {
+				$ret = array(
+					'id' => str_replace('stop_','',$li->getAttribute('id')),
+					'name' => $name,
+					'town' => $town,
+				);
+				break;
+			}
+		}
+	}
+	if (!$ret && $lis->length) {
+		// still no response… lets try another thing : do the request with only the last word on $stop
+		$page = httpRequest(array(
+			'host' => 'tam.agilisprod.com',
+			'path' => '/stop_area_searches',
+			'datas' => array('stop_area_search[user_input]' => $_stop),
+			'type' => 'post',
+			'referer' => 'http://tam.agilisprod.com/stop_area_searches',
+			'viaXHR' => true
+		));
+
+		$ret = false;
+		$dom = new DomDocument();
+		$dom->loadXML(trim($page['body']).'>');
+		$lis = $dom->getElementsByTagName('li');
+		foreach ($lis as $li) {
+			if (preg_match('/(.*) ?\([0-9]{5} (.*)\)/',trim($li->nodeValue),$matches)) {
+				$name = $matches[1];
+				$town = $matches[2];
+			} else {
+				$name = trim($li->nodeValue);
+				$town = '';
+			}
+			$_name = explode(' ',$name);
+			$_name = $_name[count($_name)-1];
+			if (phoneticize($_name) == phoneticize($_stop)) {
+				$ret = array(
+					'id' => str_replace('stop_','',$li->getAttribute('id')),
+					'name' => $name,
+					'town' => $town,
+				);
+				break;
+			}
+		}
+
+	}
+	return $ret;
+}
+
+function createDataCache() {
 	// retrieve all available bus/tram lines
-    global $lines,$MOBITrans_session_id,$operator,$MOBITrans_cookie;
+    global $lines,$agilis,$MOBITrans_session_id,$operator,$MOBITrans_cookie;
 
     if ($MOBITrans_session_id == '') startMobitransSession();
 
-    $lines = array();
+    $lines = $agilis = array();
     $bad_lines = array(3,4); // lines that are not available
 
     for ($line = 1; $line<17; $line++) {
@@ -188,6 +230,12 @@ function getLinesFromMobitrans() {
                     $params[$pp[0]] = trim($val);
                 }
                 $lines[$line][$stop] = $params;
+                $agilis_stop = getStopFromAgilis($stop);
+                if ($agilis_stop !== false)
+                	$agilis[$stop] = $agilis_stop;
+//                else
+//                	echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! $stop non trouvé via Agilis\n"; flush();
+//                echo "{$line} - {$stop} - {$agilis_stop['name']}\n"; flush();
             }
             set_time_limit(100);
             // Simulates human clicks
@@ -198,17 +246,30 @@ function getLinesFromMobitrans() {
         }
     }
     // cache the lines informations
-    file_put_contents($operator.'_cache.php','<?php $lines = '.var_export($lines,true).'; ?>');
+    file_put_contents($operator.'_cache.php',"<?php
+// Auto generated file, do not edit !!!
+// To renew this file, delete it !
+\$lines = ".var_export($lines,true).";
+\$agilis = ".var_export($agilis,true).";
+?>");
 }
+
+/******************************************************************************/
 
 function getStopsList() {
 	// get bus/tram stop names for all available lines
-	global $lines;
+	global $lines,$agilis;
 	$ret = array();
 	foreach($lines as $k=>$stops) {
 		$ret[$k] = array();
 		foreach($stops as $name=>$args) {
-			$ret[$k][] = $name;
+			if (isset($agilis[$name]))
+				$infos = $agilis[$name];
+			else
+				$infos = array('id'=>0,'name'=>$name, 'town'=>'');
+			$ret[$k][] = array(
+				$name => $infos,
+			);
 		}
 	}
 	return $ret;
@@ -218,7 +279,9 @@ function getTimes($line=16,$stopName='Alco',$needTheoric=false) {
 	// get the nex transit time
 	// its diff time from the curent time
     global $lines,$MOBITrans_session_id,$operator,$MOBITrans_cookie;
+
     if ($MOBITrans_session_id == '') startMobitransSession();
+
     $params = $lines[$line][$stopName];
     $params['I'] = $MOBITrans_session_id;
     $params['m'] = 1; // *must* be 1 !!!!
@@ -249,15 +312,15 @@ function getTimes($line=16,$stopName='Alco',$needTheoric=false) {
 		$step = 0;
         foreach($directions as $k=>$dir) {
 		    $ret[$dir] = array(
-		    				'times' => array(
-								            trim(utf8_encode($times[2][$step])),
-										    trim(utf8_encode($times[2][$step+1])),
-							),
-							'theoric' => array(
-											(($times[1][$step] != '') || $needTheoric), // is the first time is theoric ? yes = true
-											(($times[1][$step+1] != '') || $needTheoric),// is the second time is theoric ? yes = true
-							),
-		                 );
+				'times' => array(
+					trim(utf8_encode($times[2][$step])),
+					trim(utf8_encode($times[2][$step+1])),
+				),
+				'theoric' => array(
+					(($times[1][$step] != '') || $needTheoric), // is the first time is theoric ? yes = true
+					(($times[1][$step+1] != '') || $needTheoric),// is the second time is theoric ? yes = true
+				),
+			);
 		    $step+=2;
 		}
         return $ret;
@@ -270,10 +333,11 @@ function getTransit($line=2,$stopName='Aiguelongue',$direction='',$needTheoric=f
     if (is_array($times)) {
     	if (trim($direction)!='') {
     		// verify, if a direction that has been explicitely asked, really exists
-        	if (array_key_exists($direction,$times))
+        	if (array_key_exists($direction,$times)) {
             	return $times[$direction];
-            else
+            } else {
             	return false;
+            }
     	} else {
     		return $times;
         }
@@ -283,26 +347,27 @@ function getTransit($line=2,$stopName='Aiguelongue',$direction='',$needTheoric=f
     }
 }
 
+
 /* Main                                                                       */
 /******************************************************************************/
 
 @include $operator.'_cache.php';
-// it the cache is empty, retrieve all lines
-if (!isset($lines)) getLinesFromMobitrans();
+// if the cache is empty, retrieve all lines
+if (!isset($lines) || !isset($agilis)) createDataCache();
 
 // handle API calls
 switch($_REQUEST['request']) {
 	case 'getStopsList':
+		$full = isset($_REQUEST['fullInfos']);
 		$response = array(
 			'status' => 'ok',
-			'response' => getStopsList(),
+			'response' => getStopsList($full),
 		);
 		header('Content-type: application/json',true);
 		exit(json_encode($response));
 		break;
 	case 'getTransit':
 		$_REQUEST['stop'] = stripslashes($_REQUEST['stop']);
-		$_REQUEST['direction'] = stripslashes($_REQUEST['direction']);
 		if (isset($lines[$_REQUEST['line']][$_REQUEST['stop']])) {
 			$ret = getTransit($_REQUEST['line'],$_REQUEST['stop'],$_REQUEST['direction'],$_REQUEST['theoric']);
 			if ($ret === false)
