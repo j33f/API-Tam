@@ -256,20 +256,24 @@ function createDataCache() {
 
 /******************************************************************************/
 
-function getStopsList() {
+function getStopsList($full=false) {
 	// get bus/tram stop names for all available lines
 	global $lines,$agilis;
 	$ret = array();
 	foreach($lines as $k=>$stops) {
 		$ret[$k] = array();
 		foreach($stops as $name=>$args) {
-			if (isset($agilis[$name]))
-				$infos = $agilis[$name];
-			else
-				$infos = array('id'=>0,'name'=>$name, 'town'=>'');
-			$ret[$k][] = array(
-				$name => $infos,
-			);
+			if ($full) {
+				if (isset($agilis[$name]))
+					$infos = $agilis[$name];
+				else
+					$infos = array('id'=>0,'name'=>$name, 'town'=>'');
+				$ret[$k][] = array(
+					$name => $infos,
+				);
+			} else {
+				$ret[$k][] = $name;
+			}
 		}
 	}
 	return $ret;
