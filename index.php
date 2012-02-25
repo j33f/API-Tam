@@ -23,6 +23,18 @@
 require_once 'libs/utilities.php';
 require_once 'libs/phoneticize.php';
 
+function operatorCache() {
+	// create a cache of all infos about the curent operator
+	global $operator,$lines,$agilis;
+    file_put_contents($operator.'_cache.php',"<?php
+// Auto generated file, do not edit !!!
+// To renew this file, delete it !
+\$lines = ".var_export($lines,true).";
+\$agilis = ".var_export($agilis,true).";
+?>");
+
+}
+
 /* Main functions & global vars                                               */
 /******************************************************************************/
 
@@ -246,12 +258,7 @@ function createDataCache() {
         }
     }
     // cache the lines informations
-    file_put_contents($operator.'_cache.php',"<?php
-// Auto generated file, do not edit !!!
-// To renew this file, delete it !
-\$lines = ".var_export($lines,true).";
-\$agilis = ".var_export($agilis,true).";
-?>");
+	operatorCache();
 }
 
 /******************************************************************************/
@@ -277,6 +284,46 @@ function getStopsList($full=false) {
 		}
 	}
 	return $ret;
+}
+
+function getStopInfos($stop,$save_to_cache=false) {
+	// get all available infos about a stop
+	global $lines,$agilis;
+	if (isset($agilis[$stop])) {
+		$infos = $agilis[$stop];
+		// get connected lines if not cached
+		if (!isset($infos['lines'])) {
+			$page = httpRequest(array(
+				'host' => 'tam.agilisprod.com',
+				'path' => '/stop_areas/'.$infos['id'].'/stop_area_line_searches',
+				'type' => 'get',
+				'referer' => 'http://tam.agilisprod.com/stop_area_searches',
+				'viaXHR' => true
+			));
+
+			preg_match_all(
+				'#<a href="/timetable_at_stop_searches/([0-9]*)_'.$infos['id'].'_'.date('Ymd').'"><p class="line_number"><span class="panel" >([^<]*)</span></p><span class="line_name">([^<]*)</span></a>#m',
+				html_entity_decode(preg_replace('/\\\\[uU]([0-9a-fA-F]{4})/', '&#x\1;',str_replace('\"','"',$page['body'])), ENT_NOQUOTES, 'UTF-8'),
+				$matches
+			);
+
+			$infos['lines'] = array();
+			foreach ($matches[1] as $k=>$id) {
+				$infos['lines'][] = array (
+					'id'		=> $id,
+					'number'	=> $matches[2][$k],
+					'name'		=> $matches[3][$k],
+				);
+			}
+			if ($save_to_cache) {
+				$agilis[$stop] = $infos;
+				operatorCache();
+			}
+		}
+		return $infos;
+	} else {
+		return false;
+	}
 }
 
 function getTimes($line=16,$stopName='Alco',$needTheoric=false) {
