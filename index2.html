@@ -1,0 +1,188 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<title>API Tam</title>
+	<meta name="description" content="APi TAM">
+	<meta name="author" content="Jean-François VIAL">
+
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+
+	<link rel="stylesheet" href="css/bootstrap.css">
+	<style>
+	body {
+	  padding-top: 60px;
+	  padding-bottom: 40px;
+	}
+	</style>
+<!--	<link rel="stylesheet" href="css/bootstrap-responsive.css">-->
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/style.css">
+
+	<script src="js/libs/modernizr-2.5-respond-1.1.0.min.js"></script>
+</head>
+<body>
+<!--[if lt IE 7]><p class=chromeframe>Votre navigateur est <em>obsolète !</em> Il serait peut être temps de <a href="http://www.mozilla.org/fr/firefox/new/">télécharger un vrai navigateur</a> !</p><![endif]-->
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="i-bar"></span>
+            <span class="i-bar"></span>
+            <span class="i-bar"></span>
+          </a>
+          <a class="brand" href="#">API Tam</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="inactive"><a href="https://github.com/Modulaweb/API-Tam">Code source</a></li>
+              <li class="inactive"><a href="https://github.com/Modulaweb/API-Tam/issues">Rapports de bugs</a></li>
+              <li class="inactive"><a href="http://www.midilibre.fr/2012/02/16/tram-les-horaires-enfin-en-temps-reel-sur-smartphone,458643.php">La presse en parle</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+      <a href="https://github.com/Modulaweb/API-Tam" style="display: block; position: absolute; top: 0; right: 0; border: 0; z-index: 1000000;"><img src="https://a248.e.akamai.net/assets.github.com/img/7afbc8b248c68eb468279e8c17986ad46549fb71/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Contribuez sur GitHub !"></a>
+    </div>
+
+    <div class="container">
+
+      <!-- Main hero unit for a primary marketing message or call to action -->
+      <div class="hero-unit">
+        <h1>API Tam</h1>
+        <p>Cette <acronym title="Application Programming Interface : interface de programmation applicative">API</acronym> permet d'interroger le service quasi inutilisable mis à disposition des usagers par Transdev (Société qui gère les transports en commun pour la <acronym title="Transports de l'Agglomération de Montpellier">Tam</acronym>) : <a href="http://www.montpellier-agglo.com/tam/page.php?id_rubrique=246">MOBITrans®</a>.</p>
+        <p>Grâce à cette API il vous est possible d'obtenir les horaires du prochain passage du bus/tram de chaque ligne à chaque arrêt et dans chaque direction.</p>
+        <p>MOBITrans® étant un service commun aux transports des agglomérations de Montpellier, Genoble, Orléans et Reims, il est tout à fait possible de l'utiliser pour ces villes !</p>
+       </div>
+
+      <!-- Example row of columns -->
+      <div class="row-fluid">
+        <div class="span12">
+          <h2>Sources de données</h2>
+           <p><i class="icon-chevron-right"></i> </i> Liste des arrêts et heure du prochain passage en tems réel : <a href="http://tam.mobitrans.fr">MOBITrans®</a>. Attention, cette source n'est pas très stable. En effet, à de nombreuses reprises, le service a montré de multiples défaillances temporaires (lignes qui disparaissent, directions inexistantes…).</p>
+           <p><i class="icon-chevron-right"></i> </i> Noms réels des arrêts (et prochainement horaires théoriques selon la date et l'heure) : <a href="http://tam.agilisprod.com">tam.agilisprod.com</a> accessible sur <a href="http://www.montpellier-agglo.com/tam/page.php?id_rubrique=15">le site de la Tam</a>.</p>
+           <p><i class="icon-warning-sign" title="Note importante"><strong class="invisible">Note importante:</strong></i> Transdev est l'éditeur de ces deux sources de données, mais aucune mentions concernant la propriété de ces données n'est clairement définie sur les sites (ni aucune mentions légales pourant obligatoires).</p>
+        </div>
+      </div>
+      <hr>
+      <div class="row-fluid">
+        <div class="span4">
+          <h2>À propos de cette API</h2>
+           <p>Cette API est développée par <a href="http://about.me/Jeff_">Jean-François VIAL</a> qui assume l'entière responsabilité, notamment juridique, de cette API.</p>
+           <p>Cette API n'est pas une application, c'est une utilitaire qui va chercher des données proposées en libre accès par différents sites web et permet à des application de les exploiter directement.</p>
+           <p><a href="https://github.com/Modulaweb/API-Tam">Code source</a> sous licence GPLv3.</p>
+           <p>Vous pouvez <a href="https://github.com/Modulaweb/API-Tam/issues">contribuer à cette API en remontant des bugs</a> proposer des patches ou faire un fork.</p>
+           <p>Aucune donnée n'est distribuée avec cette API.</p>
+        </div>
+        <div class="span4">
+          <h2>Usage</h2>
+           <p>L'usage de cette API est très simple : tout se passe en GET et il n'y a, pour l'instant, que deux commandes décrites ci-après.</p>
+           <p>Les réponses sont toujours en JSON suivant le même format : un tableau comportant deux entrées, l'une nommée "status", l'autre "response".</p>
+           <p>"status" peut valoir "ok" ou "error" suivant si la requête est bonne ou pas.</p>
+           <p>"response" contient soit un tableau, soit un texte explicatif de l'erreur.</p>
+           <p>Dans vos applications, veuillez spécifier la source de vos données via l'une des mentions : «MOBITrans®» ou «API Tam» accompagné d'un lien vers la source.</p>
+           <p><strong>Merci d'utiliser cette API depuis votre propre serveur et de ne pas interroger directement ce serveur ormis pour des tests.</strong></p>
+        </div>
+        <div class="span4">
+          <h2>Installation / Initialisation</h2>
+           <p>Copiez simplement le fichier index.php et adaptez le à vos besoins si nécessaire.</p>
+           <p>Vous aurez besoin uniquement de PHP5, aucune extention non native n'est nécessaire.</p>
+           <p>Avant d'opérer la première requête, l'API a besoin de récupérer un certain nombre d'informations depuis les différentes sources de données et de les mettre en cache dans un fichier (probablement, plus tard une base de données).<br>Cette opération est automatique (effectuée au premier appel à l'API et prends un certain temps.</p>
+           <p>Si les données transitant par l'API étaient ouvertes et/ou libres, une version de ce fichier de cache aurait pu être distribué avec cette API, hors, hélas, ce n'est pas le cas : cette opération de mise en cache est obligatoire.</p>
+           <p>Afin de renouveler ce cache, si besoin, il suffit de le supprimer : il sera recréé automatiquement au prochain appel de l'API.</p>
+        </div>
+      </div>
+      <hr>
+      <div class="row-fluid">
+        <div class="span6">
+          <h2>Liste des arrêts / lignes</h2>
+           <p>Exemple: http://www.modulaweb.fr/apitam/?request=getStopsList</p>
+           <p>Arguments: <br />
+           <i class="icon-chevron-right"></i> </i> request = getStopsList<br>
+           <i class="icon-chevron-right"></i> </i> fullInfos = 1 (facultatif)</p>
+           <p>Vous récupérez un tableau associatif où chaque clé est le numéro de ligne, et chaque valeur la liste des noms des arrêts.</p>
+           <p>Ce sont ces numéros de lignes et ces noms d'arrêts qu'il faudra utiliser avec la deuxième commande.</p>
+           <p>En rajoutant l'argument «fullInfos» vous obtiendrez à la place du simple nom de l'arrêt, un autre tableau associatif du type :</p>
+           <pre>
+"Chateau D'o": {
+    "id": "17402888",
+    "name": "Château d'Ô",
+    "town": "Montpellier",
+    "lines": {
+        "id": "17402888",
+        "name": "Château d'Ô",
+        "town": "Montpellier",
+        "lines": [
+            {
+                "id": "23894380",
+                "number": "1",
+                "name": "Mosson - Odysseum"
+            },
+            {
+                "id": "17402778",
+                "number": "16",
+                "name": "Tournezy - Euromédecine"
+            },
+            {
+                "id": "24910222",
+                "number": "7",
+                "name": "J. Monnet - Martelle/Bouisses"
+            }
+        ]
+    }
+
+}}</pre>
+          <p>où :<br>
+          <i class="icon-chevron-right"></i> </i> <em>id</em> est l'indentifiant de cet arrêt dans la deuxième source de données (<a href="http://tam.agilisprod.com">tam.agilisprod.com</a>),<br>
+          <i class="icon-chevron-right"></i> </i> <em>name</em> est le nom réel de l'arrêt,<br>
+          <i class="icon-chevron-right"></i> </i> <em>town</em> est la ville où se trouve l'arrêt,<br>
+          <i class="icon-chevron-right"></i> </i> <em>lines</em> une liste des lignes en correspondance à cet arrêt (certaines lignes n'étant pas encore utilisables directement via l'API).
+          </p>
+          <p>Les informations de géolocalisation viendrons bientôt.</p>
+          <p><a class="btn btn-primary" href="./?request=getStopsList"><i class="icon-eye-open icon-white"></i> Tester cette commande (liste simple)</a></p>
+          <p><a class="btn btn-primary" href="./?request=getStopsList&fullInfos=1"><i class="icon-eye-open icon-white"></i> Tester cette commande (fullInfos)</a></p>
+       </div>
+       <div class="span6">
+          <h2>Prochain passage</h2>
+          <p>Exemple: http://www.modulaweb.fr/apitam/?request=getTransit&line=3&stop=Astruc&direction=Mosson</p>
+          <p>Arguments: <br />
+          <i class="icon-chevron-right"></i> </i> request = getTransit<br />
+          <i class="icon-chevron-right"></i> </i> line = le numéro de la ligne<br />
+          <i class="icon-chevron-right"></i> </i> stop = le nom de l'arrêt<br />
+          <i class="icon-chevron-right"></i> </i> direction = le nom de la direction de la ligne (optionnel)
+          </p>
+          <p>Avec cette commande vous récupérez un tableau associatif vous donnant les deux prochains horaires de passage de la ligne "ligne" à l'arrêt "stop" en direction de "direction", plus une indication précisant si ce sont des données réelles ou théoriques.</p>
+          <p>si vous ne spécifiez pas la direction, vous obtiendrez ces mêmes informations pour chaque direction de la ligne qui dessert l'arrêt.</p>
+          <p><a class="btn btn-primary" href="./?request=getTransit&line=3&stop=Astruc&direction=Mosson"><i class="icon-eye-open icon-white"></i> Tester cette commande</a></p>
+          <p><a class="btn btn-primary" href="./?request=getTransit&line=3&stop=Astruc"><i class="icon-eye-open icon-white"></i> Tester cette commande (sans la direction)</a></p>
+        </div>
+      </div>
+
+      <hr>
+
+      <footer>
+        <p>Restez libre. - Hébergé par <a href="http://modulaweb.fr">Modulaweb</a>.</p>
+      </footer>
+
+    </div> <!-- /container -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/libs/jquery-1.7.1.min.js"><\/script>')</script>
+
+<script src="js/libs/bootstrap/transition.js"></script>
+<script src="js/libs/bootstrap/collapse.js"></script>
+
+<script src="js/script.js"></script>
+<script>
+	var _gaq=[['_setAccount','UA-8358756-1'],['_trackPageview']];
+	(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+	g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+	s.parentNode.insertBefore(g,s)}(document,'script'));
+</script>
+</body>
+</html>
+
