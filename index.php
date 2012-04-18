@@ -406,15 +406,9 @@ function getTransit($line=2,$stopName='Aiguelongue',$direction='',$needTheoric=f
 // if the cache is empty, retrieve all lines
 if (!isset($lines) || !isset($agilis)) createDataCache();
 
-/* Galvanize : Google Analytics tracker for PHP */
-error_reporting(0);
-include('Galvanize.php');
-
 // handle API calls
 switch($_REQUEST['request']) {
 	case 'getStopsList':
-		$GA = new Galvanize('UA-8358756-1');
-		$GA->trackPageView();
 		$full = isset($_REQUEST['fullInfos']);
 		$response = array(
 			'status' => 'ok',
@@ -424,8 +418,6 @@ switch($_REQUEST['request']) {
 		exit(json_encode($response));
 		break;
 	case 'getTransit':
-		$GA = new Galvanize('UA-8358756-1');
-		$GA->trackPageView();
 		$_REQUEST['stop'] = stripslashes($_REQUEST['stop']);
 		if (isset($lines[$_REQUEST['line']][$_REQUEST['stop']])) {
 			$ret = getTransit($_REQUEST['line'],$_REQUEST['stop'],$_REQUEST['direction'],$_REQUEST['theoric']);
